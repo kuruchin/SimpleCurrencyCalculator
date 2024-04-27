@@ -12,20 +12,20 @@ namespace SimpleCurrencyCalculator
             Console.OutputEncoding = Encoding.Unicode;
             Console.InputEncoding = Encoding.Unicode;
 
-            // API Key
-            string apiKey = "cb9da4e12ddb48bc577825b3";
+            ICurrencyConverter currencyConverter = null;
+            bool getConverterLoop = true;
 
-            // Create currency converter
-            ICurrencyConverter currencyConverter = new MockCurrencyConverter();
-            // Uncomment to get the real rates
-            //ICurrencyConverter currencyConverter = new CurrencyConverterExchangeRateAPI(apiKey);
+            while (getConverterLoop)
+            {
+                currencyConverter = GetConverter(out getConverterLoop);
+            }
 
             // Create calculator
             ICalculator calculator = new Calculator(currencyConverter);
 
-            while (true) // Infinite loop to keep the console open
+            while (true)
             {
-                Console.Write("Enter expression (sum or difference) in format \"number1$ + number2€\": ");
+                Console.Write("Введите выражение (сумма или разность) в формате \"число1$ + число2€\": ");
                 string expression = Console.ReadLine();
 
                 try
@@ -38,7 +38,7 @@ namespace SimpleCurrencyCalculator
                     // Check if we have the correct number of matches
                     if (matches.Count != 2)
                     {
-                        Console.WriteLine("Error parsing expression.");
+                        Console.WriteLine("Ошибка в распознавании строки.");
                         continue;
                     }
 
@@ -54,18 +54,39 @@ namespace SimpleCurrencyCalculator
                     if (expression.Contains("+"))
                     {
                         result = await calculator.AddAsync(value1.ToString(), currency1, value2.ToString(), currency2);
-                        Console.WriteLine($"Sum: {result} {currency1.Symbol}");
+                        Console.WriteLine($"Сумма : {result} {currency1.Symbol}\n");
                     }
                     else if (expression.Contains("-"))
                     {
                         result = await calculator.SubtractAsync(value1.ToString(), currency1, value2.ToString(), currency2);
-                        Console.WriteLine($"Difference: {result} {currency1.Symbol}");
+                        Console.WriteLine($"Разность: {result} {currency1.Symbol}\n");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: {ex.Message}");
+                    Console.WriteLine($"Ошибка: {ex.Message}\n");
                 }
+            }
+        }
+
+        static ICurrencyConverter GetConverter(out bool getConverterLoop)
+        {
+            Console.Write("Введите 1 для мок-конвертера или 2 для реального: ");
+            string converter = Console.ReadLine();
+
+            switch (converter)
+            {
+                case string s when s.Contains("1"):
+                    getConverterLoop = false;
+                    return new MockCurrencyConverter();
+                case string s when s.Contains("2"):
+                    string apiKey = "cb9da4e12ddb48bc577825b3";
+                    getConverterLoop = false;
+                    return new CurrencyConverterExchangeRateAPI(apiKey);
+                default:
+                    Console.Write("Неизвестный символ конвертера\n");
+                    getConverterLoop = true;
+                    return null;
             }
         }
 
@@ -79,7 +100,7 @@ namespace SimpleCurrencyCalculator
                 case string s when s.Contains("€"):
                     return new EURCurrency();
                 default:
-                    throw new ArgumentException("Unknown currency symbol");
+                    throw new ArgumentException("Неизвестный символ валюты");
             }
         }
     }

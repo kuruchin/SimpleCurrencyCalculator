@@ -66,7 +66,7 @@ namespace SimpleCurrencyCalculator
                 }
                 else
                 {
-                    throw new Exception($"Ошибка при получении курса валюты: {response.StatusCode}");
+                    throw new Exception($"Ошибка при получении курса валюты: {response.StatusCode}\n");
                 }
             }
         }
