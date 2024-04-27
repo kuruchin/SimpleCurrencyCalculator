@@ -76,10 +76,10 @@ namespace SimpleCurrencyCalculator
 
             switch (converter)
             {
-                case string s when s.Contains("1"):
+                case "1":
                     getConverterLoop = false;
                     return new MockCurrencyConverter();
-                case string s when s.Contains("2"):
+                case "2":
                     string apiKey = "cb9da4e12ddb48bc577825b3";
                     getConverterLoop = false;
                     return new CurrencyConverterExchangeRateAPI(apiKey);
